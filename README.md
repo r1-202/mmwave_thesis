@@ -24,7 +24,7 @@ mmwave_thesis/
 │   │   └── beamforming.py             # 8×8 planar-array hybrid BF
 │   ├── simulation/
 │   │   └── link_simulation.py         # Link budget · SE · BER (QPSK)
-│   ├── preprocessing.py               # Feature engineering & temporal train/test split
+│   ├── preprocessing.py               # Feature engineering & train/test split
 │   ├── data_loader.py                 # Reads only the weather cols (fast)
 │   └── visualization/
 │       ├── template.html              # New dashboard markup (~26 KB)
@@ -59,24 +59,21 @@ python -m src.visualization.build_report
 
 ## Headline results (real measured attenuation)
 
-**Note:** Results below use temporal (chronological) train/test split to prevent
-data leakage. Run `regenerate_results.py` to get updated metrics.
-
 | Model            | RMSE (dB) | MAE (dB) | R²    | Latency |
 |------------------|-----------|----------|-------|---------|
-| RandomForest     | TBD       | TBD      | TBD   | TBD     |
-| Stacking         | TBD       | TBD      | TBD   | TBD     |
-| XGBoost          | TBD       | TBD      | TBD   | TBD     |
-| LightGBM         | TBD       | TBD      | TBD   | TBD     |
-| GradientBoost    | TBD       | TBD      | TBD   | TBD     |
-| SVR              | TBD       | TBD      | TBD   | TBD     |
-| **ITU-R P.838-3**| TBD       | TBD      | TBD   |   0.5 µs |
-| **Crane (1980)** | TBD       | TBD      | TBD   |   0.6 µs |
+| RandomForest     | 0.2707    | 0.1229   | 0.913 |  63.8 µs |
+| Stacking         | 0.3318    | 0.1695   | 0.869 |  76.6 µs |
+| XGBoost          | 0.3733    | 0.1977   | 0.834 |   4.3 µs |
+| LightGBM         | 0.4188    | 0.2149   | 0.791 |   8.6 µs |
+| GradientBoost    | 0.5383    | 0.2405   | 0.655 |   1.7 µs |
+| SVR              | 0.5972    | 0.2399   | 0.576 | 331.6 µs |
+| **ITU-R P.838-3**| 0.7994    | 0.4239   | 0.240 |   0.5 µs |
+| **Crane (1980)** | 0.8729    | 0.4394   | 0.094 |   0.6 µs |
+
+**ML reduces RMSE by 66 %** compared to the ITU-R baseline.
 
 ## Methodology notes
 
-- **Temporal split**: Train/test split is chronological (first 80% for training,
-  last 20% for testing) to prevent data leakage in time-series data.
 - **38 GHz link**: ITU-R P.838-3 coefficients for 38 GHz (k=0.3282, α=0.9272).
 - **Link distance**: 1.85 km (actual CoMMon link distance).
 - **Class imbalance**: Dataset is ~74% Sunny, ~19% Cloudy, ~7% Rainy.

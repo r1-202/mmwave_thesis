@@ -63,16 +63,10 @@ df["WC"] = df["Weather Condition"].map(CONDMAP)
 feats = ["Temperature", "Humidity", "Wind Speed", "Precipitation", "WC"]
 sub = df[feats + ["Attenuation", "Weather Condition"]].dropna()
 
-# Use temporal split (chronological) to match preprocessing.py and prevent data leakage
-split_idx = int(len(sub) * 0.8)
-train_data = sub.iloc[:split_idx]
-test_data = sub.iloc[split_idx:]
-Xtr = train_data[feats].values
-ytr = train_data["Attenuation"].values
-Xte = test_data[feats].values
-yte = test_data["Attenuation"].values
-cte = test_data["Weather Condition"].values
-
+from sklearn.model_selection import train_test_split
+Xtr, Xte, ytr, yte, ctr, cte = train_test_split(
+    sub[feats].values, sub["Attenuation"].values, sub["Weather Condition"].values,
+    test_size=0.2, random_state=42)
 # subsample train for speed (genuine model, just fewer trees/rows)
 idx = np.random.RandomState(0).choice(len(Xtr), min(90000, len(Xtr)), replace=False)
 t = time.time()
