@@ -65,7 +65,7 @@ sub = df[feats + ["Attenuation", "Weather Condition"]].dropna()
 
 from sklearn.model_selection import train_test_split
 Xtr, Xte, ytr, yte, ctr, cte = train_test_split(
-    sub[feats].values, sub["Attenuation"].values, sub["Weather Condition"].values,
+    sub[feats].values, sub["Attenuation"].values, sub["Weather Condition"].to_numpy(),
     test_size=0.2, random_state=42)
 # subsample train for speed (genuine model, just fewer trees/rows)
 idx = np.random.RandomState(0).choice(len(Xtr), min(90000, len(Xtr)), replace=False)
