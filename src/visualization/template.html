@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5G mmWave Attenuation — ML Prediction & Optimization · LIU Thesis 2025</title>
+<script src="plotly.min.js" charset="utf-8"></script>
+<script>if(!window.Plotly){document.write("\x3Cscript src=\x22https://cdn.plot.ly/plotly-2.35.2.min.js\x22>\x3C/script>");}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060a13; --bg2:#0a1020; --panel:#0e1628; --panel2:#111c33;
+  --line:#1b2945; --line2:#26375a;
+  --cyan:#2fe6c8; --cyan2:#19d5ff; --blue:#5b8cff; --purple:#9d7bff;
+  --pink:#ff5ca8; --amber:#ffb13d; --green:#3ee08f; --red:#ff5d6c; --orange:#ff8a4c;
+  --txt:#e8eefb; --mut:#8ba0c4; --mut2:#5f7396;
+  --glow:0 0 40px rgba(47,230,200,.12);
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(1100px 620px at 82% -10%, rgba(91,140,255,.10), transparent 60%),
+    radial-gradient(900px 520px at 4% 10%, rgba(47,230,200,.08), transparent 55%),
+    var(--bg);
+  color:var(--txt); font-family:'Manrope',sans-serif; line-height:1.55;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3,h4,.disp{font-family:'Sora',sans-serif;letter-spacing:-.01em}
+.mono{font-family:'JetBrains Mono',monospace}
+a{color:var(--cyan2);text-decoration:none}
+.wrap{max-width:1320px;margin:0 auto;padding:0 26px}
+.grad{background:linear-gradient(100deg,var(--cyan),var(--cyan2) 45%,var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.gradp{background:linear-gradient(100deg,var(--purple),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);
+  background:rgba(6,10,19,.82);border-bottom:1px solid var(--line)}
+.navin{display:flex;align-items:center;gap:18px;height:64px}
+.logo{display:flex;align-items:center;gap:12px}
+.logobox{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));box-shadow:var(--glow);font-size:20px}
+.logo b{font-family:'Sora';font-weight:800;font-size:14.5px;display:block}
+.logo span{font-size:10.5px;color:var(--mut)}
+.nlinks{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.nlinks a{color:var(--mut);font-size:13px;font-weight:600;padding:7px 11px;border-radius:9px;transition:.18s}
+.nlinks a:hover,.nlinks a.active{color:var(--txt);background:var(--panel2)}
+.nlinks a.cta{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04121a}
+
+/* HERO */
+.hero{padding:58px 0 26px;position:relative}
+.badge{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);
+  border:1px solid var(--line2);background:var(--panel);padding:8px 16px;border-radius:30px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(33px,5.6vw,58px);line-height:1.05;margin:22px 0 16px;font-weight:800}
+.hero p.lead{color:var(--mut);font-size:16.5px;max-width:900px}
+.leads{display:flex;gap:16px;flex-wrap:wrap;margin-top:28px}
+.leadcard{flex:1;min-width:290px;display:flex;align-items:center;gap:14px;
+  background:linear-gradient(160deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:var(--r);padding:16px 18px}
+.av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-weight:800;
+  font-family:'Sora';color:#04121a;flex-shrink:0}
+.leadcard b{display:block;font-size:15px}
+.leadcard .role{color:var(--cyan2);font-size:12px;font-weight:600}
+.tag{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--amber);
+  border:1px solid rgba(255,177,61,.3);background:rgba(255,177,61,.08);padding:5px 10px;border-radius:20px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:40px 0 4px}
+.kpi{position:relative;background:linear-gradient(165deg,var(--panel),var(--bg2));
+  border:1px solid var(--line);border-radius:var(--r);padding:20px 19px;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-3px);border-color:var(--line2)}
+.kpi::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;
+  background:var(--c,var(--cyan));box-shadow:0 0 16px var(--c,var(--cyan))}
+.kpi .v{font-family:'Sora';font-weight:800;font-size:28px;color:var(--c,var(--cyan));line-height:1}
+.kpi .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin-top:9px;font-weight:700}
+.kpi .s{font-size:11.5px;color:var(--mut2);margin-top:3px}
+
+/* SECTION */
+section{padding:48px 0;border-top:1px solid var(--line);scroll-margin-top:80px}
+.shead{display:flex;align-items:flex-end;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.shead h2{font-size:clamp(23px,3.2vw,32px);font-weight:800}
+.shead .pill{font-size:11px;font-weight:700;color:var(--cyan);border:1px solid var(--line2);
+  background:var(--panel);padding:5px 13px;border-radius:20px}
+.shead p{color:var(--mut);font-size:14.5px;width:100%;max-width:880px;margin-top:4px}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan2);margin-bottom:6px;width:100%}
+
+/* TABLE */
+.tablecard{background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:var(--r);overflow:hidden}
+.tablescroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th{text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);
+  padding:15px 18px;font-weight:700;border-bottom:1px solid var(--line)}
+td{padding:14px 18px;border-bottom:1px solid var(--line);font-size:14px}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--panel2)}
+.rank{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-family:'Sora';font-size:12.5px}
+.mdl{font-weight:700;color:var(--cyan)}
+.tt{font-size:10px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:7px;
+  background:rgba(62,224,143,.12);color:var(--green);border:1px solid rgba(62,224,143,.25)}
+.tt.trad{background:rgba(157,123,255,.12);color:var(--purple);border-color:rgba(157,123,255,.25)}
+.bar{height:8px;border-radius:5px;background:linear-gradient(90deg,var(--cyan),var(--blue))}
+
+/* CHART GRID */
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:var(--r);padding:17px 17px 9px;position:relative;transition:.2s}
+.card:hover{border-color:var(--line2)}
+.card h4{font-size:14px;font-weight:700;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.card .cd{font-size:11.5px;color:var(--mut);margin-bottom:8px}
+.plot{width:100%;height:330px}
+.plot.big{height:440px}
+.plot.tall{height:380px}
+.full{grid-column:1/-1}
+.note{font-size:11.5px;color:var(--mut2);margin:6px 2px 4px;line-height:1.5}
+.note b{color:var(--mut)}
+
+/* INSIGHT CARDS */
+.insights{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
+.ins{background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:14px;padding:17px}
+.ins h5{font-size:13.5px;font-weight:700;margin-bottom:6px}
+.ins p{font-size:12.5px;color:var(--mut);line-height:1.55}
+.ins.green{border-color:rgba(62,224,143,.3)}.ins.green h5{color:var(--green)}
+.ins.cyan{border-color:rgba(25,213,255,.3)}.ins.cyan h5{color:var(--cyan2)}
+.ins.purple{border-color:rgba(157,123,255,.3)}.ins.purple h5{color:var(--purple)}
+.ins.amber{border-color:rgba(255,177,61,.3)}.ins.amber h5{color:var(--amber)}
+
+/* GALLERY */
+.galcat{font-size:13px;font-weight:800;letter-spacing:.06em;color:var(--cyan2);
+  margin:22px 0 12px;display:flex;align-items:center;gap:8px}
+.galgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.galtile{background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:13px;overflow:hidden;cursor:pointer;transition:.2s;text-align:left}
+.galtile:hover{transform:translateY(-4px);border-color:var(--cyan2);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.galthumb{height:104px;width:100%;display:block;border-bottom:1px solid var(--line)}
+.galmeta{padding:11px 13px}
+.galmeta b{font-size:12.5px;font-weight:700;display:block}
+.galmeta span{font-size:10.5px;color:var(--mut)}
+
+/* LEBANON MAP */
+.maprow{display:grid;grid-template-columns:1fr 330px;gap:18px}
+.citybox{background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--line);
+  border-radius:var(--r);padding:20px}
+.citybox h3{font-size:18px;color:var(--amber);display:flex;align-items:center;gap:8px}
+.citymeta{font-size:12px;color:var(--mut);margin:2px 0 16px}
+.cstats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cstat{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px}
+.cstat .v{font-family:'Sora';font-weight:800;font-size:19px;color:var(--amber)}
+.cstat .l{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin-top:3px}
+.qbadge{margin-top:14px;text-align:center;font-weight:700;font-size:13px;padding:11px;border-radius:11px;
+  background:rgba(255,177,61,.1);border:1px solid rgba(255,177,61,.3);color:var(--amber)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:11.5px;color:var(--mut)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.methodbox{background:rgba(91,140,255,.06);border:1px solid rgba(91,140,255,.25);border-radius:12px;
+  padding:14px 16px;margin-bottom:16px;font-size:12.5px;color:var(--mut);line-height:1.6}
+.methodbox b{color:var(--blue)}
+
+/* ABOUT */
+.tech{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:12.5px;font-weight:600;color:var(--mut);background:var(--panel);border:1px solid var(--line);
+  padding:9px 15px;border-radius:11px}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+.cc{background:linear-gradient(165deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:var(--r);padding:24px;text-align:center}
+.cc .av{width:60px;height:60px;margin:0 auto 12px;font-size:19px}
+.cc a{display:block;font-size:13.5px;margin-top:5px}
+footer{padding:34px 0;border-top:1px solid var(--line);color:var(--mut2);font-size:13px;text-align:center}
+
+@media(max-width:980px){.kpis,.insights{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g4,.maprow,.contact{grid-template-columns:1fr}}
+.reveal{opacity:0;transform:translateY(18px);transition:.6s}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap navin">
+  <div class="logo"><div class="logobox">📡</div>
+    <div><b>5G mmWave Research Portal <span style="color:var(--cyan)">LB</span></b>
+    <span>LIU Lebanon · I. Abdelghani &amp; M. Moussa · 2025</span></div></div>
+  <div class="nlinks" id="nlinks">
+    <a href="#home">Home</a><a href="#leaderboard">Models</a><a href="#compare">Comparison</a>
+    <a href="#attenuation">Attenuation</a><a href="#link">Link &amp; BF</a><a href="#viz3d">3D</a>
+    <a href="#gallery">Gallery</a><a href="#map">Lebanon</a><a class="cta" href="#contact">Contact</a>
+  </div>
+</div></nav>
+
+<header id="home" class="hero"><div class="wrap">
+  <span class="badge"><span class="dot"></span>MSc Thesis · Lebanese International University · 2025</span>
+  <h1><span class="grad">Machine Learning–Based Prediction</span> &amp; Optimization of
+    <span class="gradp">Weather-Induced Attenuation</span> in 5G mmWave Links</h1>
+  <p class="lead">A complete AI research system trained on <b id="rowsTxt">512,944</b> rows of
+    <b>real measured 38 GHz attenuation</b> from a commercial microwave link (CoMMon campaign).
+    Six machine-learning predictors are benchmarked against the traditional <b>ITU-R P.838-3</b>
+    and <b>Crane (1980)</b> physical models, with hybrid-beamforming link optimization and an
+    interactive Lebanon 5G coverage projection. Every figure below is computed directly from the
+    dataset and the project's own physics code.</p>
+  <div class="leads">
+    <div class="leadcard"><div class="av" style="background:linear-gradient(135deg,var(--blue),var(--purple))">IA</div>
+      <div><b>Ibrahim Mahmoud Abdelghani</b><span class="role">Lead Researcher · LIU Lebanon</span></div>
+      <span class="tag">★ LEAD</span></div>
+    <div class="leadcard"><div class="av" style="background:linear-gradient(135deg,var(--cyan),var(--green))">MM</div>
+      <div><b>Mohammad Khaled Moussa</b><span class="role">Lead Researcher · LIU Lebanon</span></div>
+      <span class="tag">★ LEAD</span></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+</div></header>
+
+<section id="leaderboard"><div class="wrap">
+  <div class="shead"><span class="kicker">01 · Benchmark</span>
+    <h2>🏆 Model Performance Leaderboard</h2><span class="pill" id="rowsPill">— rows</span>
+    <p>Six ML models trained to predict the <b>real measured</b> rain-induced attenuation of a 38 GHz
+       commercial link, benchmarked against the ITU-R P.838-3 and Crane (1980) physical models.
+       Lower RMSE / MAE and higher R² are better.</p></div>
+  <div class="tablecard"><div class="tablescroll"><table>
+    <thead><tr><th>Rank</th><th>Model</th><th>Type</th><th>RMSE (dB)</th><th>MAE (dB)</th>
+      <th>Accuracy bar</th><th>Inference latency</th><th>R²</th></tr></thead>
+    <tbody id="lbody"></tbody></table></div></div>
+</div></section>
+
+<section id="compare"><div class="wrap">
+  <div class="shead"><span class="kicker">02 · Head-to-Head</span>
+    <h2>📊 Traditional vs Machine Learning — Metric Comparison</h2><span class="pill">6 metrics</span>
+    <p>Dedicated comparison of the traditional physical models against all six ML models, one
+       optimization/performance metric at a time. All values are derived from the project results
+       and the link-budget physics.</p></div>
+  <div class="grid g2">
+    <div class="card"><h4>Prediction Accuracy — RMSE &amp; MAE</h4><div class="cd">Attenuation prediction error · lower is better</div><div id="cAcc" class="plot"></div></div>
+    <div class="card"><h4>Coefficient of Determination — R²</h4><div class="cd">Variance explained · higher is better</div><div id="cR2" class="plot"></div></div>
+    <div class="card"><h4>Bit Error Rate (QPSK)</h4><div class="cd">At an 11 dB link-margin-limited operating point · log scale</div><div id="cBER" class="plot"></div></div>
+    <div class="card"><h4>Inference Latency</h4><div class="cd">Per-sample prediction time · log scale, lower is better</div><div id="cLat" class="plot"></div></div>
+    <div class="card"><h4>Spectral Efficiency — No-BF vs Hybrid BF</h4><div class="cd">8×8 hybrid array link · mean over dataset</div><div id="cSE" class="plot"></div></div>
+    <div class="card"><h4>Received SNR — No-BF vs Hybrid BF</h4><div class="cd">Mean link SNR with beamforming gain</div><div id="cSNR" class="plot"></div></div>
+  </div>
+  <div class="insights" id="insights"></div>
+</div></section>
+
+<section id="attenuation"><div class="wrap">
+  <div class="shead"><span class="kicker">03 · Attenuation Analysis</span>
+    <h2>📈 Attenuation Prediction &amp; Dataset Analysis</h2><span class="pill">7 charts</span>
+    <p>How the measured 38 GHz attenuation behaves with weather, and how the best ML model and the
+       physical models track the ground truth.</p></div>
+  <div class="card full" style="margin-bottom:18px"><h4>Mean Measured Attenuation vs ITU-R P.838-3 vs Crane (1980)</h4>
+    <div class="cd">Real measured attenuation binned by rain rate, overlaid with both physical model predictions (28 GHz, 1.85 km link)</div>
+    <div id="mainChart" class="plot big"></div></div>
+  <div class="grid g2">
+    <div class="card"><h4>Predicted vs Actual — RandomForest</h4><div class="cd">Best ML model on held-out test samples · dashed = perfect prediction</div><div id="cPred" class="plot"></div></div>
+    <div class="card"><h4>All Models vs Ground Truth</h4><div class="cd">Test samples sorted by true attenuation · ML tracks truth, physical models diverge</div><div id="cSorted" class="plot"></div></div>
+    <div class="card"><h4>Residual Analysis — RandomForest</h4><div class="cd">Prediction error vs true attenuation · zero line = perfect</div><div id="cResid" class="plot"></div></div>
+    <div class="card"><h4>Measured Attenuation Distribution</h4><div class="cd">38 GHz attenuation across 512,944 rows · long-tailed</div><div id="cHist" class="plot"></div></div>
+    <div class="card"><h4>Feature Importance — RandomForest</h4><div class="cd">Mean decrease in impurity · what drives attenuation</div><div id="cFI" class="plot"></div></div>
+    <div class="card"><h4>Mean Attenuation by Weather Condition</h4><div class="cd">Dataset average measured attenuation per class</div><div id="cCond" class="plot"></div></div>
+  </div>
+</div></section>
+
+<section id="link"><div class="wrap">
+  <div class="shead"><span class="kicker">04 · Link &amp; Beamforming</span>
+    <h2>📡 Link Budget &amp; Hybrid Beamforming KPIs</h2><span class="pill">7 charts</span>
+    <p>Communication-system performance derived from the link-budget simulation: BER, spectral
+       efficiency, throughput, multi-band attenuation and SNR distribution.</p></div>
+  <div class="grid g2">
+    <div class="card"><h4>BER vs SNR — Modulation Theory + Model Operating Points</h4><div class="cd">QPSK / 16-QAM / 64-QAM curves with each model's achieved BER · log scale</div><div id="cBERsnr" class="plot"></div></div>
+    <div class="card"><h4>Spectral Efficiency vs SNR</h4><div class="cd">Shannon capacity · Hybrid BF (92%) · Analog BF (75%)</div><div id="cSEsnr" class="plot"></div></div>
+    <div class="card"><h4>Beamforming Sum-Rate SE vs Attenuation</h4><div class="cd">Fully digital (8 streams) · Hybrid OMP (4 RF chains) · Analog (1 stream)</div><div id="cBFse" class="plot"></div></div>
+    <div class="card"><h4>Received SNR vs Attenuation per BF Mode</h4><div class="cd">Link SNR degradation as path attenuation rises</div><div id="cBFsnr" class="plot"></div></div>
+    <div class="card"><h4>Throughput vs Distance (5 Rain Levels)</h4><div class="cd">400 MHz NR channel · 28 GHz · log scale</div><div id="cTput" class="plot"></div></div>
+    <div class="card"><h4>Multi-Band Specific Attenuation (3.5–77 GHz)</h4><div class="cd">ITU-R P.838-3 rain + P.676 gaseous · log scale</div><div id="cMB" class="plot"></div></div>
+  </div>
+  <div class="card full" style="margin-top:18px"><h4>Received SNR Cumulative Distribution — With vs Without Beamforming</h4>
+    <div class="cd">Empirical CDF of link SNR over the full dataset · 8×8 hybrid array adds +18.06 dB</div>
+    <div id="cCDF" class="plot"></div></div>
+</div></section>
+
+<section id="viz3d"><div class="wrap">
+  <div class="shead"><span class="kicker">05 · 3D Surfaces</span>
+    <h2>🧊 Interactive 3D Visualizations</h2><span class="pill">6 rotatable scenes</span>
+    <p>Click-drag to rotate, scroll to zoom. Every surface is computed from the project's ITU-R /
+       link-budget / beamforming functions over real parameter ranges.</p></div>
+  <div class="grid g2">
+    <div class="card"><h4>① ITU-R Attenuation Surface — Rain × Frequency</h4><div class="cd">Specific rain attenuation γ_R (dB/km), P.838-3</div><div id="d1" class="plot tall"></div></div>
+    <div class="card"><h4>② Received SNR Surface — Rain × Distance</h4><div class="cd">Link SNR with 8×8 beamforming (dB)</div><div id="d2" class="plot tall"></div></div>
+    <div class="card"><h4>③ Weather Cloud — Rain × Temp × Humidity</h4><div class="cd">1,400 real samples coloured by measured attenuation</div><div id="d3" class="plot tall"></div></div>
+    <div class="card"><h4>④ Spectral Efficiency Surface — SNR × BF Elements</h4><div class="cd">Sum-rate SE (bps/Hz)</div><div id="d4" class="plot tall"></div></div>
+    <div class="card"><h4>⑤ QPSK BER Surface — SNR × Rain</h4><div class="cd">log₁₀ bit-error-rate</div><div id="d6" class="plot tall"></div></div>
+    <div class="card"><h4>⑥ Model Comparison Space — RMSE × R² × Latency</h4><div class="cd">All 8 models positioned in 3D metric space</div><div id="d7" class="plot tall"></div></div>
+  </div>
+</div></section>
+
+<section id="gallery"><div class="wrap">
+  <div class="shead"><span class="kicker">06 · Figure Gallery</span>
+    <h2>🖼 Figure Gallery</h2><span class="pill" id="galcount">— figures</span>
+    <p>A publication-quality index of every figure in this report, organised by theme. Click any tile
+       to jump straight to the interactive chart.</p></div>
+  <div id="galleryRoot"></div>
+</div></section>
+
+<section id="map"><div class="wrap">
+  <div class="shead"><span class="kicker">07 · Coverage Projection</span>
+    <h2>🇱🇧 Lebanon 5G mmWave Coverage Map</h2><span class="pill">10 cities · interactive</span>
+    <p>Per-city 28/60 GHz attenuation, SNR, throughput and availability for a representative 1 km
+       small-cell link. Click any marker for the full breakdown.</p></div>
+  <div class="methodbox">
+    <b>Methodology &amp; honesty note.</b> The CoMMon dataset is a single 38 GHz link time-series and
+    contains <b>no geographic coordinates</b>, so a per-city map cannot be read directly from it.
+    Each city below is therefore a transparent <b>model projection</b>: the project's own ITU-R P.838-3
+    (rain) + P.676 (gaseous) attenuation functions and the link-budget / beamforming simulation are
+    evaluated at each city's representative ITU-R rain rate (the wet Mediterranean coast vs. the dry
+    Bekaa rain-shadow gradient). Headline ML metrics (RMSE, R², MAE) are unchanged and come straight
+    from training on the real measured attenuation.
+  </div>
+  <div class="maprow">
+    <div class="card" style="padding:6px"><div id="lebMap" class="plot" style="height:560px"></div>
+      <div class="legend" style="padding:0 14px 12px">
+        <span><i style="background:var(--green)"></i>Excellent (&lt;1.5 dB)</span>
+        <span><i style="background:var(--cyan2)"></i>Good (1.5–3 dB)</span>
+        <span><i style="background:var(--amber)"></i>Fair (3–6 dB)</span>
+        <span><i style="background:var(--red)"></i>Poor (&gt;6 dB)</span></div></div>
+    <div class="citybox" id="cityBox"></div>
+  </div>
+</div></section>
+
+<section id="about"><div class="wrap">
+  <div class="shead"><span class="kicker">08 · Team</span><h2>👥 About the Researchers</h2>
+    <p>This thesis was developed by two Lead Researchers at the Lebanese International University (LIU) — Faculty of Engineering.</p></div>
+  <div class="grid g2" style="margin-bottom:24px">
+    <div class="card" style="padding:24px"><b style="font-size:17px">Ibrahim Mahmoud Abdelghani</b>
+      <div class="role" style="color:var(--cyan2);font-weight:600;font-size:13px;margin:4px 0 10px">Lead Researcher · LIU</div>
+      <p style="color:var(--mut);font-size:14px">ML pipeline architecture, ITU-R P.838-3 &amp; Crane (1980) models, 5G mmWave link simulation, hybrid OMP beamforming, real-time station API and system integration.</p></div>
+    <div class="card" style="padding:24px"><b style="font-size:17px">Mohammad Khaled Moussa</b>
+      <div class="role" style="color:var(--cyan2);font-weight:600;font-size:13px;margin:4px 0 10px">Lead Researcher · LIU</div>
+      <p style="color:var(--mut);font-size:14px">Weather-dataset analysis, seasonal study, explainability, probabilistic modeling, Lebanon coverage projection and research documentation.</p></div>
+  </div>
+  <h3 style="font-size:16px;margin-bottom:4px">🛠 Technologies</h3>
+  <div class="tech">
+    <span class="chip">Python 3.14</span><span class="chip">NumPy / SciPy</span><span class="chip">Pandas</span>
+    <span class="chip">scikit-learn</span><span class="chip">XGBoost</span><span class="chip">LightGBM</span>
+    <span class="chip">Plotly</span><span class="chip">Matplotlib</span><span class="chip">PyCharm 2025.3.3</span>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap">
+  <div class="shead"><span class="kicker">09 · Contact</span><h2>📨 Contact</h2><p>Lebanese International University (LIU) — Faculty of Engineering</p></div>
+  <div class="contact">
+    <div class="cc"><div class="av" style="background:linear-gradient(135deg,var(--blue),var(--purple))">IA</div>
+      <b style="color:var(--cyan2)">Ibrahim Mahmoud Abdelghani</b>
+      <div style="font-size:12.5px;color:var(--mut)">★ Lead Researcher · LIU</div>
+      <a href="tel:+96176342983">📞 +961 76 342 983</a>
+      <a href="mailto:21930127@students.liu.edu.lb">✉ 21930127@students.liu.edu.lb</a></div>
+    <div class="cc"><div class="av" style="background:linear-gradient(135deg,var(--cyan),var(--green))">MM</div>
+      <b style="color:var(--cyan2)">Mohammad Khaled Moussa</b>
+      <div style="font-size:12.5px;color:var(--mut)">★ Lead Researcher · LIU</div>
+      <a href="tel:+96181683534">📞 +961 81 683 534</a>
+      <a href="mailto:21930327@students.liu.edu.lb">✉ 21930327@students.liu.edu.lb</a></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">5G mmWave Research Portal · Machine Learning–Based Prediction &amp; Optimization of
+  Weather-Induced Attenuation · Lebanese International University · © 2025
+  Ibrahim Abdelghani &amp; Mohammad Moussa</div></footer>
+
+<script>
+const DATA = /*__DATA__*/;
+/*__SCRIPT__*/
+</script>
+</body>
+</html>

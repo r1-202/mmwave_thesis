@@ -1,0 +1,71 @@
+{
+  "n_rows": 512944,
+  "best_model": "RandomForest",
+  "carrier_ghz": 38,
+  "link_km": 1.85,
+  "dataset": "CoMMon 38 GHz CML (real measured attenuation)",
+  "models": {
+    "RandomForest": {
+      "rmse": 0.27082997680192317,
+      "r2": 0.9127044948574288,
+      "mae": 0.12286475462407415,
+      "train_s": 122.3,
+      "latency_us": 18.341
+    },
+    "XGBoost": {
+      "rmse": 0.37325876652399304,
+      "r2": 0.834187048291918,
+      "mae": 0.19770490480459443,
+      "train_s": 14.8,
+      "latency_us": 4.755
+    },
+    "LightGBM": {
+      "rmse": 0.4188323975315904,
+      "r2": 0.7912247785343084,
+      "mae": 0.2149189446068082,
+      "train_s": 7.02,
+      "latency_us": 11.097
+    },
+    "GradientBoost": {
+      "rmse": 0.5383391025278287,
+      "r2": 0.6550864392069031,
+      "mae": 0.24047239657617642,
+      "train_s": 8.39,
+      "latency_us": 7.521
+    },
+    "SVR": {
+      "rmse": 0.5971741945188401,
+      "r2": 0.5755754643183041,
+      "mae": 0.23993672535979083,
+      "train_s": 56.94,
+      "latency_us": 3365.301
+    },
+    "StackingEnsemble": {
+      "rmse": 0.33180672562748204,
+      "r2": 0.8689705895621247,
+      "mae": 0.16949894136652935,
+      "train_s": 0.0,
+      "latency_us": 34.193
+    },
+    "Traditional_ITU": {
+      "rmse": 0.7994254926504414,
+      "r2": 0.24008895357180593,
+      "mae": 0.4238734131985314,
+      "train_s": 0.0,
+      "latency_us": 0.5
+    },
+    "Traditional_Crane": {
+      "rmse": 0.8728991189730729,
+      "r2": 0.09398605648328684,
+      "mae": 0.4393692376906254,
+      "train_s": 0.0,
+      "latency_us": 0.6
+    }
+  },
+  "feature_importance": {
+    "Temperature": 0.1287,
+    "Humidity": 0.0954,
+    "Wind Speed": 0.1334,
+    "Precipitation": 0.6421
+  }
+}
